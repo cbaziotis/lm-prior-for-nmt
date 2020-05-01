@@ -32,7 +32,8 @@ pip install -r requirements.txt
 
 ### Download Data
 
-**1. Parallel data**: You can download the preprocessed data, the truecase models and the pretrained sentencepiece models from this link:
+**1. Parallel data**: 
+You can download the preprocessed data, the truecase models and the pretrained sentencepiece models from this link:
 http://data.statmt.org/cbaziotis/projects/lm-prior/parallel. 
 Put the `wmt_ende` and `wmt_entr` folders in the `datasets/mt/` directory. 
 
@@ -67,5 +68,14 @@ For example, you can train a LM on a small test corpus like this:
 ```shell script
 /models$  python sent_lm.py --config ../configs/prototype.rnn_lm_en.yaml model.emb_size=256
 ```
+All the outputs of the models and its training progress will be saved in the `experiments/` directory.
 
-**Train a LM**: Run `models/sent_lm.py` using the desired config
+
+ - **Train a LM**: Run `models/sent_lm.py` using the desired config.
+ - **Train a TM**: Run `models/nmt_prior.py` using the desired config.
+
+
+### Analysis
+
+To view more information about the analysis done in the paper go to: 
+http://data.statmt.org/cbaziotis/projects/lm-prior/analysis
