@@ -317,7 +317,7 @@
             },
             loadData: function () {
                 let vm = this
-                fetch('./samples.json').then(resp => resp.json()).then(json => {
+                fetch('./trans_samples.json').then(resp => resp.json()).then(json => {
                     vm.data = json
                     // vm.data = json.slice(0, 10)
                 });
