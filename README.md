@@ -74,7 +74,7 @@ All the outputs of the models and its training progress will be saved in the `ex
  - **Train a LM**: Run `models/sent_lm.py` using the desired config.
  - **Train a TM**: Run `models/nmt_prior.py` using the desired config.
 
-Take a look at the config files in 
+Take a look at the config files in `configs/transformer/` for details.
 
 ### Analysis
 
