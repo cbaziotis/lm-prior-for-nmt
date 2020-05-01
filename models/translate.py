@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 from helpers.text import devectorize
 from helpers.training import load_checkpoint
-from models.nmt.nmt_helpers import prior_model_from_checkpoint
+from models.nmt_prior_helpers import prior_model_from_checkpoint
 from modules.data.collates import LMCollate
 from modules.data.datasets import SequenceDataset
 from modules.data.samplers import BucketTokensSampler
