@@ -1,0 +1,139 @@
+epochs: 200
+batch_tokens: 10000
+
+logging:
+  log_interval: 50
+  eval_interval: 4000
+  checkpoint_interval: 6000
+  samples_interval: 200
+  emb_inspect_interval: 200
+  module_grad_interval: 200
+
+init:
+  linear_init: "xavier_uniform"
+  lstm_hh_init: "orthogonal"
+  lstm_ih_init: "xavier_uniform"
+  embed_init: "xavier_uniform"
+
+optim:
+  optimizer: adam
+  lr: 0.0003
+  k: 10
+  weight_decay: 0.0
+  clip: 1
+
+  scheduler: noam
+  interval: batch
+  factor: 1
+  warmup: 8000
+
+  step_size: 1
+  patience: 3
+  eta_min: 0.00001
+  min_lr: 0.00001
+  gamma: 0.5
+  milestones: [5,15]
+  early_stop: 10
+
+
+data:
+  src:
+    train_path: ../datasets/mt/wmt_entr/train.en.pp
+    val_path:   ../datasets/mt/wmt_entr/dev.en.pp
+    test_path:   ../datasets/mt/wmt_entr/test.en.pp
+    subword_path: ../datasets/mt/wmt_entr/en.16000
+    lang: en
+
+  trg:
+    train_path: ../datasets/mt/wmt_entr/train.tr.pp
+    val_path:   ../datasets/mt/wmt_entr/dev.tr.pp
+    test_path:   ../datasets/mt/wmt_entr/test.tr.pp
+    subword_path: ../datasets/mt/wmt_entr/tr.16000
+    lang: tr
+
+  seq_len: 1000
+  lowercase: True
+  sos: True
+  streaming: False
+  vocab_path:
+  vocab_size:
+
+  # path to pretrained LM. It is required for LM-Fusion and LM-priors
+  prior_path:
+
+losses:
+  #  standard translation loss (Cross-Entropy)
+  mt:
+    weight: 1
+    tag: translation
+    perplexity: True
+    smoothing: 0.0
+
+
+
+transfer:
+  # transfer from pretrained checkpoint
+  tm_path:
+
+  # transfer from pretrained LMs
+  lm:
+  # enc_path:
+  # dec_path:
+
+  # transfer from pretrained embeddings
+  emb:
+  # src:
+  # trg:
+  # zero_mean: True
+  # max_norm: False
+  # unit_var: False
+  # pca: False
+
+model:
+  bridge_non_linearity: tanh  # non-linearity for the bridge layer
+
+  decoding:
+    sampling: 0               # sampling probability
+    sampling_mode: "argmax"   # "argmax", "gs", "st", "gs-st"
+    tau: 1                    # temperature for differentiable sampling
+    fusion:                   # use post-norm fusion
+
+  encoder:
+    emb_trainable: True       # train embedding layer
+    emb_size: 512             # embedding layer size
+    emb_noise: 0.0            # std for additive gaussian noise
+    emb_dropout: 0.3          # dropout to the embedding layer
+    emb_layer_norm: False     # apply LayerNorm to the embedding layer
+    inp_dropout: 0.           # drop input tokens
+
+    rnn_size: 512            # size of the RNN layer
+    rnn_layers: 2             # number of RNN layers
+    rnn_dropout: 0.3          # dropout to RNN outputs
+    rnn_layer_norm: False     # apply LayerNorm to RNN outputs
+    rnn_type: LSTM            # RNN type (LSTM, GRU)
+    rnn_bidirectional: True   # make RNN bidirectional
+
+  decoder:
+    emb_trainable: True       # train embedding layer
+    emb_size: 512             # embedding layer size
+    emb_noise: 0.0            # std for additive gaussian noise
+    emb_dropout: 0.3          # dropout to the embedding layer
+    emb_layer_norm: False     # apply LayerNorm to the embedding layer
+    inp_dropout: 0.           # drop input tokens
+
+    rnn_size: 512            # size of the RNN layer
+    rnn_layers: 2             # number of RNN layers
+    rnn_dropout: 0.3          # dropout to RNN outputs
+    rnn_layer_norm: False     # apply LayerNorm to RNN outputs
+    rnn_type: LSTM            # RNN type (LSTM, GRU)
+    out_dropout: 0.3          # dropout to the final outputs
+    input_shortcut: True      # add the embedding to the output vector
+
+    attention: True           # use attention mechanism
+    attention_fn: general     # function for computing the attention scores
+    outputs_fn: concat        # function for combining the RNN outputs
+    input_feeding: True       # use input feeding
+
+    tie_projections: True     # tie the embedding-output layers of the decoder
+    out_non_linearity: tanh   # non-linearity of the *final* decoder outputs
+    out_layer_norm: True      # apply LayerNorm to the *final* decoder outputs

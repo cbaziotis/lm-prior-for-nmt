@@ -1,0 +1,116 @@
+epochs: 200000
+batch_tokens: 10000
+
+logging:
+  log_interval: 50
+  eval_interval: 5000
+  full_eval_interval: 4000000
+  checkpoint_interval: 6000
+  samples_interval: 200
+  emb_inspect_interval: 200
+  module_grad_interval: 200
+
+init:
+  linear_init: "xavier_uniform"
+  lstm_hh_init: "orthogonal"
+  lstm_ih_init: "xavier_uniform"
+  embed_init: "xavier_uniform"
+
+optim:
+  optimizer: adam
+  lr: 0.0003
+  k: 10
+  weight_decay: 0.0
+  clip: 1
+
+  scheduler: noam
+  interval: batch
+  factor: 1
+  warmup: 8000
+
+  step_size: 1
+  patience: 3
+  eta_min: 0.00001
+  min_lr: 0.00001
+  gamma: 0.5
+  milestones: [5,15]
+  early_stop: 10
+
+
+data:
+  src:
+    train_path: ../datasets/mt/wmt_ende/train.en.pp
+    val_path:   ../datasets/mt/wmt_ende/dev.en.pp
+    test_path:   ../datasets/mt/wmt_ende/test.en.pp
+    subword_path: ../datasets/mt/wmt_ende/en.16000
+    lang: en
+
+  trg:
+    train_path: ../datasets/mt/wmt_ende/train.de.pp
+    val_path:   ../datasets/mt/wmt_ende/dev.de.pp
+    test_path:   ../datasets/mt/wmt_ende/test.de.pp
+    subword_path: ../datasets/mt/wmt_ende/de.16000
+    lang: de
+
+  seq_len: 1000
+  lowercase: True
+  sos: True
+  streaming: False
+  vocab_path:
+  vocab_size:
+
+  # path to pretrained LM. It is required for LM-Fusion and LM-priors
+  prior_path: ../../checkpoints/prior.lm_news_de_trans_3M_best.pt
+
+losses:
+  #  standard translation loss (Cross-Entropy)
+  mt:
+    weight: 1
+    tag: translation
+    perplexity: True
+    smoothing: 0.0
+  prior:
+    weight: 0.5
+    tag: prior
+    tau: 2
+    perplexity: False
+    objective: kl
+#  sem:
+#    weight: 1
+#    dist: cosine
+#    margin: True
+#    tag: semantic
+#    perplexity: False
+
+transfer:
+  # transfer from pretrained checkpoint
+  tm_path:
+
+  # transfer from pretrained LMs
+  lm:
+  # enc_path:
+  # dec_path:
+
+  # transfer from pretrained embeddings
+  emb:
+  # src:
+  # trg:
+  # zero_mean: True
+  # max_norm: False
+  # unit_var: False
+  # pca: False
+
+model:
+  emb_renorm: False            # keep the word embeddings centered (zero-mean)
+  type: transformer
+
+  decoding:
+    fusion:                    # use post-norm fusion
+
+  emb_trainable: True
+  emb_size: 512
+  nhid: 1024
+  nhead: 8
+  nlayers: 6
+  dropout: 0.3
+  tie_projections: True

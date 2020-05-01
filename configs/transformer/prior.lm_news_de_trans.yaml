@@ -1,0 +1,73 @@
+epochs: 200000
+batch_tokens: 16000
+parallel: False
+pin_memory: False
+
+logging:
+  log_interval: 100
+  checkpoint_interval: 5000
+  samples_interval: 1000
+  emb_inspect_interval: 1000
+  module_grad_interval: 500
+
+init:
+  linear_init: "xavier_uniform"
+  lstm_hh_init: "orthogonal"
+  lstm_ih_init: "xavier_uniform"
+  embed_init: "xavier_uniform"
+
+optim:
+  optimizer: adam
+  lr: 0.0003
+  k: 10
+  weight_decay: 0.0
+  clip: 1
+
+  scheduler: noam
+  interval: batch
+  factor: 1
+  warmup: 8000
+
+  step_size: 1
+  patience: 3
+  eta_min: 0.00001
+  min_lr: 0.00001
+  gamma: 0.5
+  milestones: [5,15]
+  early_stop: 10
+
+
+losses:
+  lm:
+    tag: lm
+    weight: 1
+    perplexity: True
+
+data:
+  train_path: ../datasets/mono/priors/news.de.2014-2017.pp.3M.train
+  val_path:   ../datasets/mono/priors/news.de.2014-2017.pp.val
+  subword_path: ../datasets/mt/wmt_ende/de.16000
+
+  seq_len: 250
+  sos: True
+  oovs: 0
+  vocab_size:
+  embeddings:
+
+
+model:
+  mode: LM # LM,  AE
+  type: transformer
+
+  emb_renorm: False
+  emb_zero_mean: False
+  emb_unit_var: False
+
+  emb_trainable: True
+  emb_size: 512
+  nhid: 2048
+  nhead: 8
+  nlayers: 6
+  dropout: 0.1
+  inp_dropout: 0.0
+  tie_projections: True

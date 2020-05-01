@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sample Visualization</title>
+    <!-- Required Stylesheets -->
+    <link
+            type="text/css"
+            rel="stylesheet"
+            href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link
+            type="text/css"
+            rel="stylesheet"
+            href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"
+    />
+
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
+
+
+    <!-- Required scripts -->
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <!--    <script src="https://unpkg.com/bootstrap@latest/dist/js/bootstrap.min.js"></script>-->
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/nicolaspanel/numjs@0.15.1/dist/numjs.min.js"></script>
+    <script src="https://unpkg.com/popper.js"></script>
+    <script src="https://unpkg.com/tooltip.js"></script>
+    <script src="https://unpkg.com/vue-tippy/dist/vue-tippy.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-tippy/dist/vue-tippy.min.js"></script>
+
+
+</head>
+<body>
+<div id="app">
+    <div class="container-fluid px-1">
+
+        <nav class="navbar sticky-top navbar-dark bg-light">
+            <!--            <a class="navbar-brand" href="#">Sticky top</a>-->
+            <button @click='showPrior = !showPrior'
+                    type="button" class="btn btn-primary"
+                    :class="{ active : showPrior, disabled: !showPrior }"
+                    variant="primary" size="sm">Prior:{{showPrior}}
+            </button>
+            <button @click='showShallow = !showShallow'
+                    type="button" class="btn btn-primary"
+                    :class="{ active : showShallow, disabled: !showShallow }"
+                    variant="primary" size="sm">Shallow:{{showShallow}}
+            </button>
+            <button @click='showPostnorm = !showPostnorm'
+                    type="button" class="btn btn-primary"
+                    :class="{ active : showPostnorm, disabled: !showPostnorm }"
+                    variant="primary" size="sm">Postnorm:{{showPostnorm}}
+            </button>
+            <button @click='showOnlyFail = !showOnlyFail'
+                    type="button" class="btn btn-primary"
+                    :class="{ active : showOnlyFail, disabled: !showOnlyFail }"
+                    variant="primary" size="sm">only mistakes:{{showOnlyFail}}
+            </button>
+        </nav>
+        <!--        {{data[0].source}}-->
+        <div class="sentence-wrapper" v-for="sentence in data.filter(showSentence)">
+            <table>
+                <tr>
+                    <th>Source</th>
+                    <td class="prob">{{clean_tok(sentence.source.join(''))}}</td>
+                </tr>
+            </table>
+
+            <table class="sentence" border=1 frame=void rules=rows>
+                <tr>
+                    <th>Target</th>
+                    <td v-for="(tok, index) in sentence.target">
+                        <span class="token">{{tok}}</span>
+                    </td>
+                </tr>
+                <!-- PRIOR -->
+                <tr v-if="showPrior">
+                    <td>
+                        <strong>Prior</strong>
+                        <table style="margin: 3px">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>TM (=DEC)</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                        <table style="margin: 3px">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>LM</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td v-for="(tok, index) in sentence.prior_toks">
+<!--                        <span class="token">{{tok}}</span>-->
+                        <span class="token"
+                              v-bind:class="{ fail: sentence.prior_toks[index] !== sentence.target[index]}">{{tok}}</span>
+                        <table class="dist">
+                            <tr v-for="prob in sentence.prior_dist[index].slice(0,3)"
+                                :style="progressStyle(prob[1]*100, 1)">
+                                <td v-html="prob[0]" class="token"></td>
+                                <td class="prob">{{Number((prob[1]*100).toFixed(1))}}%</td>
+                            </tr>
+                        </table>
+                        <table class="dist">
+                            <tr v-for="prob in sentence.prior_dist_lm[index].slice(0,3)"
+                                :style="progressStyle(prob[1]*100, 2)">
+                                <td v-html="prob[0]" class="token"></td>
+                                <td class="prob">{{Number((prob[1]*100).toFixed(1))}}%</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <!-- SHALLOW -->
+                <tr v-if="showShallow">
+                    <td>
+                        <strong>Shallow</strong>
+                        <table style="margin: 3px">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>TM</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                        <table style="margin: 3px">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>DEC</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                        <table style="margin: 3px">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>LM</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td v-for="(tok, index) in sentence.shallow_toks">
+                        <span class="token"
+                              v-bind:class="{ fail: sentence.shallow_toks[index] !== sentence.target[index]}">{{tok}}</span>
+                        <table class="dist" v-bind:class="{ fail: sentence.shallow_fails[index] }">
+                            <tr v-for="prob in sentence.shallow_dist[index].slice(0,3)"
+                                :style="progressStyle(prob[1]*100, 0)">
+                                <td v-html="prob[0]" class="token"></td>
+                                <td class="prob">{{Number((prob[1]*100).toFixed(1))}}%</td>
+                            </tr>
+                        </table>
+                        <table class="dist">
+                            <tr v-for="prob in sentence.shallow_dist_tm[index].slice(0,3)"
+                                :style="progressStyle(prob[1]*100, 1)">
+                                <td v-html="prob[0]" class="token"></td>
+                                <td class="prob">{{Number((prob[1]*100).toFixed(1))}}%</td>
+                            </tr>
+                        </table>
+                        <table class="dist">
+                            <tr v-for="prob in sentence.shallow_dist_lm[index].slice(0,3)"
+                                :style="progressStyle(prob[1]*100, 2)">
+                                <td v-html="prob[0]" class="token"></td>
+                                <td class="prob">{{Number((prob[1]*100).toFixed(1))}}%</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr v-if="showPostnorm">
+                    <td>
+                        <strong>PostNorm</strong>
+                        <table style="margin: 3px">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>TM</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                        <table style="margin: 3px">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>DEC</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                        <table style="margin: 3px">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>LM</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td v-for="(tok, index) in sentence.postnorm_toks">
+<!--                        <span class="token" v-if="showToken(sentence.postnorm_fails, index)">{{tok}}</span>-->
+                        <span class="token"
+                              v-bind:class="{ fail: sentence.postnorm_toks[index] !== sentence.target[index]}">{{tok}}</span>
+
+                        <div v-if="showToken(sentence.postnorm_fails, index)">
+                            <table class="dist" v-bind:class="{ fail: sentence.postnorm_fails[index] }">
+                                <tr v-for="prob in sentence.postnorm_dist[index].slice(0,3)"
+                                    :style="progressStyle(prob[1]*100, 0)">
+                                    <td v-html="prob[0]" class="token"></td>
+                                    <td class="prob">{{Number((prob[1]*100).toFixed(1))}}%</td>
+                                </tr>
+                            </table>
+                            <table class="dist">
+                                <tr v-for="prob in sentence.postnorm_dist_tm[index].slice(0,3)"
+                                    :style="progressStyle(prob[1]*100, 1)">
+                                    <td v-html="prob[0]" class="token"></td>
+                                    <td class="prob">{{Number((prob[1]*100).toFixed(1))}}%</td>
+                                </tr>
+                            </table>
+                            <table class="dist">
+                                <tr v-for="prob in sentence.postnorm_dist_lm[index].slice(0,3)"
+                                    :style="progressStyle(prob[1]*100, 2)">
+                                    <td v-html="prob[0]" class="token"></td>
+                                    <td class="prob">{{Number((prob[1]*100).toFixed(1))}}%</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    Vue.use(window.VueTippy)
+    // var nj = require('numjs')
+    var app = new Vue({
+        el: '#app',
+        data: {
+            data: null,
+            showPrior: false,
+            showShallow: false,
+            showPostnorm: false,
+            showOnlyFail: false,
+        },
+        created: function () {
+            // var nj = require('numjs')
+            this.loadData();
+        },
+        methods: {
+            clean_tok: function (tok) {
+                return tok.replace(/\u2581/g, ' ')
+            },
+            saveHtml: function (event) {
+                targetId = event.currentTarget.id;
+            },
+            showSentence: function (sentence) {
+                let keep = false;
+                if (this.showShallow && sentence.shallow_fails.includes(true)) {
+                    keep = true
+                } else if (this.showPostnorm && sentence.postnorm_fails.includes(true)) {
+                    keep = true
+                }
+                return keep
+            },
+            showToken: function (seq, i) {
+                if (this.showOnlyFail && !seq[i]) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            progressStyle: function (score, type) {
+                let style = null
+                let color = null
+                // let pallete = ["#55efc4", "#74b9ff", "#a29bfe", "#D8D8D8"];
+                // let pallete = ["#ff7675", "#74b9ff", "#a29bfe", "#D8D8D8"];
+                let pallete = ["#fdcb6e", "#74b9ff", "#74b9ff", "#b2bec3"];
+
+                color = pallete[type];
+
+                style = {
+                    // border: "1px solid black",
+                    background: "-webkit-linear-gradient(left, " + color + " " + score + "%, white " + score + "%)"
+                };
+                return style
+            },
+            loadData: function () {
+                let vm = this
+                fetch('./samples.json').then(resp => resp.json()).then(json => {
+                    vm.data = json
+                    // vm.data = json.slice(0, 10)
+                });
+            },
+        }
+    })
+
+</script>
+
+<style>
+
+    body {
+        /*font-family: Georgia, serif;*/
+        /*font-family: Courier, serif;*/
+        /*font-family: Tahoma, Geneva, sans-serif;*/
+        /*font-family: Roboto, sans-serif;*/
+        font-family: Calibri, sans-serif;
+        /*font-family: "Computer Modern Sans", sans-serif;*/
+        /*font-family: Arial, Helvetica, sans-serif;*/
+    }
+
+
+    .sequence {
+        display: block;
+    }
+
+    table {
+        border-collapse: collapse;
+        margin-bottom: 2px;
+    }
+
+    table.sentence tr {
+        padding: 5px 0;
+        margin-bottom: 10px;
+    }
+
+    table.dist {
+        width: 100%;
+        margin-bottom: .3em;
+
+    }
+
+    table.dist td.token {
+        text-align: left;
+    }
+
+    table.dist td.prob {
+        text-align: right;
+    }
+
+    table.dist.fail {
+        border: 4px solid #ff7675 !important;
+    }
+
+    span.token.fail {
+        color: #d63031 !important;
+        font-weight: 900;
+    }
+
+    table tr {
+        height: 1.2em;
+    }
+
+    table th {
+        min-width: 100px;
+    }
+
+    .sentence-wrapper {
+        border: 2px solid black;
+        display: block;
+        margin: 20px 0;
+        padding: 2px;
+
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    span.token {
+        display: block;
+        height: 1.7em !important;
+        width: 100%;
+        /*text-align: center;*/
+    }
+</style>
+</body>
+</html>

@@ -1,0 +1,66 @@
+epochs: 200
+batch_tokens: 1000
+parallel: False
+pin_memory: False
+
+logging:
+  log_interval: 100
+  checkpoint_interval: 1000
+  samples_interval: 500
+  emb_inspect_interval: 1000
+  module_grad_interval: 500
+
+optim:
+  optimizer: ranger
+  lr: 0.001
+  k: 10
+  weight_decay: 0.0
+  clip: 1
+
+  scheduler: plateau
+  step_size: 1
+  patience: 2
+  eta_min: 0.00001
+  min_lr: 0.0001
+  gamma: 0.3
+  milestones: [5,15]
+  early_stop: 10
+
+losses:
+  lm:
+    tag: lm
+    weight: 1
+    perplexity: True
+
+data:
+  train_path: ../datasets/mono/prototype/en.train
+  val_path:   ../datasets/mono/prototype/en.valid
+  subword_path: ../datasets/mt/wmt_ende/en.16000
+
+  seq_len: 250
+  sos: True
+  vocab_size: 10000
+  embeddings:
+
+
+model:
+  mode: LM # LM,  AE
+  type: rnn
+
+  emb_trainable: True
+  emb_size: 128
+  emb_dropout: 0.1
+  emb_layer_norm: False
+  emb_max_norm:
+
+  inp_dropout: 0.0
+  rnn_size: 512
+  rnn_layers: 1
+  rnn_dropout: 0.1
+  rnn_layer_norm: False
+  rnn_type: LSTM
+
+  out_layer_norm: False
+  tie_projections: True
+
+  countdown: False
