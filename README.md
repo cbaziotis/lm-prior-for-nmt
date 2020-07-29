@@ -30,26 +30,27 @@ and then the rest of the requirements:
 pip install -r requirements.txt
 ```
 
-### Download Data
+## Data
 
-**1. Parallel data**: 
-You can download the preprocessed data, the truecase models and the pretrained sentencepiece models from this link:
-http://data.statmt.org/cbaziotis/projects/lm-prior/parallel. 
-Put the `wmt_ende` and `wmt_entr` folders in the `datasets/mt/` directory. 
-
-To prepare the data on your own: 
- 1. run `datasets/mt/download_data.sh`
- 2. run `datasets/mt/preprocess_parallel.sh`
+##### Prepare data on your own
+To prepare the parallel data on your own: 
+ 1. run `bash datasets/mt/download_data.sh`
+ 2. run `bash datasets/mt/preprocess_parallel.sh`
  
  
-**2. Monolingual data**: 
-You can download the preprocessed data from this link:
-http://data.statmt.org/cbaziotis/projects/lm-prior/mono and then put the files in 
-the `datasets/mono/priors/` directory.
+##### Download preprocessed data
+You can download the preprocessed data (monolingual and parallel), the truecase models 
+and the pretrained sentencepiece models, by running:
+
+```shell script
+bash download_preprocessed_data.sh
+```
+
+ - The **parallel data** will be placed under`datasets/parallel/wmt_ende` and `datasets/parallel/wmt_entr`
+ - The **monolingual data** will be placed under`datasets/mono/priors/`
 
 
-
-### Training
+## Training
 
 ##### 1. Run Visdom server
 We use Visdom for visualizing the training progress. Therefore, first open a terminal and run the visdom server:
@@ -66,17 +67,24 @@ python script and optionally override the parameters in the config file.
 
 For example, you can train a LM on a small test corpus like this:
 ```shell script
-/models$  python sent_lm.py --config ../configs/prototype.rnn_lm_en.yaml model.emb_size=256
+lm-prior-for-nmt/models$  python sent_lm.py --config ../configs/prototype.rnn_lm_en.yaml model.emb_size=256
 ```
 All the outputs of the models and its training progress will be saved in the `experiments/` directory.
-
 
  - **Train a LM**: Run `models/sent_lm.py` using the desired config.
  - **Train a TM**: Run `models/nmt_prior.py` using the desired config.
 
 Take a look at the config files in `configs/transformer/` for details.
 
-### Analysis
+##### Download Pretrained LMs
+
+To download all the checkpoints of the LM-priors used in the experiments, run:
+
+```shell script
+bash download_lm_checkpoints.sh
+```
+
+## Analysis Web-tool
 
 To view more information about the analysis done in the paper go to: 
 http://data.statmt.org/cbaziotis/projects/lm-prior/analysis
