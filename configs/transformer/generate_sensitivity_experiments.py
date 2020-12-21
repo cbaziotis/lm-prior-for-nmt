@@ -1,6 +1,6 @@
 def experiment(pair, lamda, tau, objective, nhid, smoothing=True):
     cmd = "python nmt_prior.py"
-    cmd += f" --config ../../configs/acl_transformer/trans.{pair}_prior.yaml"
+    cmd += f" --config ../../configs/transformer/trans.{pair}_prior.yaml"
     cmd += f" losses.prior.weight={lamda}"
     cmd += f" losses.prior.tau={tau}"
     cmd += f" losses.prior.objective={objective}"

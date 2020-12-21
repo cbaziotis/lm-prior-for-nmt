@@ -3,9 +3,9 @@ batch_tokens: 10000
 
 logging:
   log_interval: 50
-  eval_interval: 5000
+  eval_interval: 1000
   full_eval_interval: 4000000
-  checkpoint_interval: 6000
+  checkpoint_interval: 50
   samples_interval: 200
   emb_inspect_interval: 200
   module_grad_interval: 200

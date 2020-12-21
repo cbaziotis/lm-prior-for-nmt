@@ -47,7 +47,7 @@ def _add_tags(pair, model_name, ls, bt, synth, subsample):
 def baseline(pair, ls, bt, synth, subsample=0):
     # specify base configuration file
     cmd = "python nmt_prior.py"
-    cmd += f" --config ../../configs/acl_rnn/rnn.{pair}_base.yaml"
+    cmd += f" --config ../../configs/rnn/rnn.{pair}_base.yaml"
 
     cmd += _add_tags(pair, "base", ls, bt, synth, subsample)
 
@@ -60,7 +60,7 @@ def fusion(pair, method, ls, bt, synth, subsample=0):
 
     # specify base configuration file
     cmd = "python nmt_prior.py"
-    cmd += f" --config ../../configs/acl_rnn/rnn.{pair}_fusion.yaml"
+    cmd += f" --config ../../configs/rnn/rnn.{pair}_fusion.yaml"
 
     # specify which fusion method to use
     cmd += f" model.decoding.fusion={method}"
@@ -80,7 +80,7 @@ def prior(pair, ls, bt, synth, subsample=0, obj="kl", size="30M"):
 
     # specify base configuration file
     cmd = "python nmt_prior.py"
-    cmd += f" --config ../../configs/acl_rnn/rnn.{pair}_prior.yaml"
+    cmd += f" --config ../../configs/rnn/rnn.{pair}_prior.yaml"
 
     # specify which regularization objective to use for the prior
     cmd += f" losses.prior.objective={obj}"
