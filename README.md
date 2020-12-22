@@ -52,7 +52,7 @@ http://data.statmt.org/cbaziotis/projects/lm-prior/mono and then put the files i
 the `datasets/mono/priors/` directory.
 
 
-#Training
+# Training
 
 ### Run Visdom server (required)
 We use Visdom for visualizing the training progress. Therefore, first open a terminal and run the visdom server:
