@@ -52,11 +52,9 @@ http://data.statmt.org/cbaziotis/projects/lm-prior/mono and then put the files i
 the `datasets/mono/priors/` directory.
 
 
---- 
+#Training
 
-### Training
-
-##### Run Visdom server (required)
+### Run Visdom server (required)
 We use Visdom for visualizing the training progress. Therefore, first open a terminal and run the visdom server:
 ```shell script
 > visdom
@@ -68,7 +66,7 @@ or multiple models to compare them.
 
 Read more about visdom here: https://github.com/facebookresearch/visdom#usage
 
-##### How to train a model
+### How to train a model
 Every model requires a base configuration stored in a `.yaml` file. 
 All model configurations are stored in the `configs/` directory. 
 When you run an experiment you need to provide a base config 
@@ -95,7 +93,7 @@ For instance, a model trained with the command above will be saved under:
 
 Verify that the model is training by opening visdom and selecting the model from the search bar.
 
-#### 1. Train a language model (LM)
+### 1. Train a language model (LM)
 To train an LM you need to run  `models/sent_lm.py` using the desired config.
 For example, to train an English Transformer-based LM on the 3M NewsCrawl data, 
 same as in the paper, use the config `configs/transformer/prior.lm_news_en_trans.yaml`
@@ -131,13 +129,13 @@ Verify that the model is training correctly by looking at the loss and model out
 You can test that everything is working correctly by trying first with a small model.
 You should start to see reasonable sentences after a while.
 
-#### 2. Train a translation model (TM)
+### 2. Train a translation model (TM)
 
 To train a TM you need to run  `models/nmt_prior.py` using the desired config.
 For the Transformer-based experiments, check the config files in `configs/transformer/`.
 
 
-##### Train a standard TM
+#### Train a standard TM
 
 To train a standard TM for `de->en` with a transformer architecture run:
 ```shell
@@ -147,7 +145,7 @@ All the model outputs will be saved in `experiments/trans.deen_base/START_DATETI
 including the checkpoint of the model that has achieved the best score in the dev set.
 
 
-##### Train a TM with a LM-prior
+#### Train a TM with a LM-prior
 
 To train a standard TM for `de->en` with a transformer architecture run:
 ```shell
@@ -166,7 +164,7 @@ You can change the path to your pretrained LM or download on the pretrained LMs 
 http://data.statmt.org/cbaziotis/projects/lm-prior/checkpoints/.
 
 
-##### Reproducibility
+#### Reproducibility
 In the following files, you will find all the commands for
 reproducing the experiments in the paper:
 
@@ -177,10 +175,7 @@ reproducing the experiments in the paper:
    for the sensitivity analysis.
 
 
-
---- 
-
-### Evaluation
+# Evaluation
 
 To evaluate a pretrained translation model you need to use `models/translate.py`.
 ```
@@ -252,7 +247,7 @@ BLEU+case.mixed+numrefs.1+smooth.exp+tok.13a+version.1.4.14 = 26.1 60.0/33.4/20.
 
 
 
-### Analysis
+## Analysis
 
 To view more information about the analysis done in the paper go to: 
 http://data.statmt.org/cbaziotis/projects/lm-prior/analysis
