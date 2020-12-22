@@ -6,7 +6,7 @@ This repository contains source code for the paper
 # Introduction 
 
 <p align="center">
-  <img src="./model.png" height="400">
+  <img src="./model.png">
 </p>
 
 In this work, we use a  language model (LM) trained
