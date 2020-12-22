@@ -108,11 +108,17 @@ def iterate_data(data):
             yield x
 
 
-def fix_paths(path):
-    root = BASE_DIR.split(os.sep)[-1]
-    base_a = path.split(root)[0]
-    base_b = os.path.dirname(os.path.realpath(__file__)).split(root)[0]
-    return path.replace(base_a, base_b)
+def fix_paths(path, separator):
+    # root = BASE_DIR.split(os.sep)[-1]
+    # base_a = path.split(root)[0]
+    # base_b = os.path.dirname(os.path.realpath(__file__)).split(root)[0]
+    # return path.replace(base_a, base_b)
+
+    if len(path.split(separator)) > 0:
+        return os.path.join(BASE_DIR, separator,
+                            path.split(separator + os.sep)[-1])
+    else:
+        return path
 
 
 # @disk_memoize

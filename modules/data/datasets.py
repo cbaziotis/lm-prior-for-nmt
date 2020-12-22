@@ -55,7 +55,7 @@ class BaseSequenceDataset(Dataset, ABC):
 
         if self.subword_path is not None:
             subword = spm.SentencePieceProcessor()
-            subword_path = fix_paths(subword_path)
+            subword_path = fix_paths(subword_path, "datasets")
             subword.Load(subword_path + ".model")
             self.tokenize = lambda x: subword.EncodeAsPieces(x.rstrip())
         else:

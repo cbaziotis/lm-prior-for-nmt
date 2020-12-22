@@ -139,7 +139,7 @@ def eval_best(trainer: NmtPriorTrainer):
 def backtranslate(trainer: NmtPriorTrainer):
     cp = load_checkpoint(trainer.best_checkpoint)
     fusion = trainer.config["model"]["decoding"].get("fusion")
-    src_file = fix_paths(trainer.config["data"]["backtranslate_path"])
+    src_file = fix_paths(trainer.config["data"]["backtranslate_path"], "datasets")
 
     _base, _file = os.path.split(src_file)
     out_file = os.path.join(_base, f"{trainer.config['name']}.synthetic")

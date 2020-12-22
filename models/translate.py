@@ -13,7 +13,6 @@ from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from helpers.eval import get_bleu_score
 from helpers.text import devectorize
 from helpers.training import load_checkpoint
 from modules.data.collates import LMCollate
@@ -21,6 +20,34 @@ from modules.data.datasets import SequenceDataset
 from modules.data.samplers import BucketTokensSampler
 from modules.data.utils import fix_paths
 from modules.models import Seq2SeqTransformer, Seq2SeqRNN, RNNLM, TransformerLM
+
+
+def prior_model_from_checkpoint(cp):
+    model_type = cp["config"]["model"].get("type", "rnn")
+
+    if model_type == "rnn":
+        prior_model = RNNLM
+    elif model_type == "transformer":
+        prior_model = TransformerLM
+    else:
+        raise NotImplementedError
+
+    prior = prior_model(len(cp['vocab']), **cp["config"]["model"])
+    prior.load_state_dict(cp["model"])
+
+    # due to a bug in PyTorch we cannot backpropagate through a model in eval
+    # mode. Therefore, we have to manually turn off the regularizations.
+    for name, module in prior.named_modules():
+        if isinstance(module, nn.Dropout):
+            module.p = 0
+
+        elif isinstance(module, nn.LSTM):
+            module.dropout = 0
+
+        elif isinstance(module, nn.GRU):
+            module.dropout = 0
+
+    return prior
 
 
 def seq2seq_translate_ids(model,
@@ -88,8 +115,8 @@ def eval_nmt_checkpoint(checkpoint, device, beams=None, lm=None, fusion_a=None,
         src_file = cp["config"]["data"]["src"][f"{dataset}_path"]
         ref_file = cp["config"]["data"]["trg"][f"{dataset}_path"]
 
-        src_file = fix_paths(src_file)
-        ref_file = fix_paths(ref_file)
+        src_file = fix_paths(src_file, "datasets")
+        ref_file = fix_paths(ref_file, "datasets")
 
         fusion = cp["config"]["model"]["decoding"].get("fusion")
         batch_tokens = max(10000 // beam_size, 1000)
@@ -181,7 +208,8 @@ def seq2seq_translate(checkpoint,
     if lm is not None:
         lm_cp = load_checkpoint(lm)
     elif fusion:
-        lm_cp = load_checkpoint(fix_paths(cp["config"]["data"]["prior_path"]))
+        lm_cp = load_checkpoint(fix_paths(cp["config"]["data"]["prior_path"],
+                                          "checkpoints"))
     else:
         lm_cp = None
 
@@ -259,11 +287,22 @@ if __name__ == "__main__":
                         help="The width of the beam search (default=1)")
     parser.add_argument('--length_penalty', default=1.0, type=float,
                         help="The value of the length penalty (default=1.0)")
-    parser.add_argument('--lm')
-    parser.add_argument('--fusion')
-    parser.add_argument('--fusion_a', type=float)
-    parser.add_argument('--batch_tokens', default=4000, type=int)
-    parser.add_argument('--device', default="cuda")
+    parser.add_argument('--lm',
+                        help="The checkpoint of a pretrained language model."
+                             "Applicable when using 1) LM fusion, or 2) LM prior.")
+    parser.add_argument('--fusion',
+                        help="The type of LM-fusion to use. "
+                             "Options: [shallow, postnorm, prenorm]")
+    parser.add_argument('--fusion_a',
+                        help="This is the weight for the LM in shallow-fusion.",
+                        type=float)
+    parser.add_argument('--batch_tokens',
+                        help="The size of the batch in number of tokens.",
+                        default=4000, type=int)
+    parser.add_argument('--device',
+                        help="The devide id to use "
+                             "(e.g., cuda, cuda:2, cpu, ...)",
+                        default="cuda")
 
     args = parser.parse_args()
 
@@ -312,31 +351,3 @@ if __name__ == "__main__":
     #                   batch_tokens=batch_tokens, device=device)
     # bleu = get_bleu_score(out_file, ref_file)
     # print(f"BLEU:{bleu}")
-
-
-def prior_model_from_checkpoint(cp):
-    model_type = cp["config"]["model"].get("type", "rnn")
-
-    if model_type == "rnn":
-        prior_model = RNNLM
-    elif model_type == "transformer":
-        prior_model = TransformerLM
-    else:
-        raise NotImplementedError
-
-    prior = prior_model(len(cp['vocab']), **cp["config"]["model"])
-    prior.load_state_dict(cp["model"])
-
-    # due to a bug in PyTorch we cannot backpropagate through a model in eval
-    # mode. Therefore, we have to manually turn off the regularizations.
-    for name, module in prior.named_modules():
-        if isinstance(module, nn.Dropout):
-            module.p = 0
-
-        elif isinstance(module, nn.LSTM):
-            module.dropout = 0
-
-        elif isinstance(module, nn.GRU):
-            module.dropout = 0
-
-    return prior

@@ -100,7 +100,7 @@ same as in the paper, use the config `configs/transformer/prior.lm_news_en_trans
 and (optionally) pass any parameters to override those in the config file:
 
 ```shell
-python mono_sent.py --config ../configs/transformer/prior.lm_news_en_trans.yaml  \
+python sent_lm.py --config ../configs/transformer/prior.lm_news_en_trans.yaml  \
   --device cuda  --name prior.lm_news_en_3M_trans_big \ 
   batch_tokens=12000 model.emb_size=1024 model.nhid=4096 model.nhead=16 model.dropout=0.3
 ```
@@ -130,21 +130,28 @@ To train a standard TM for `de->en` with a transformer architecture run:
 All the model outputs will be saved in `experiments/trans.deen_base/START_DATETIME/`,
 including the checkpoint of the model that has achieved the best score in the dev set.
 
-**Evaluation**: To evaluate a pretrained model, run:
+
+##### Train a TM with a LM-prior
+
+To train a standard TM for `de->en` with a transformer architecture run:
 ```shell
-
-# translate the preprocessed input file (DE)
-python models/translate.py --src datasets/mt/wmt_ende/test.de.pp \ 
-  --out test.en.pp.hyps \
-  --cp experiments/trans.deen_base/20-10-21_21:41:08/trans.deen_base_best.pt \ 
-  --beam_size 5 --device cuda
-
-# compare the raw detokenized hypothesis file (EN'), with the raw test set (EN)
-cat test.en.pp.hyps | sacrebleu datasets/mt/wmt_ende/test.en
+/models$  nmt_prior.py --config ../../configs/transformer/trans.deen_prior.yaml --name final.trans.deen_base
 ```
+If you open `configs/transformer/trans.deen_prior.yaml` you will see that it expects a pretrained LM
+```shell
+  ...
+
+  # path to pretrained LM. It is required for LM-Fusion and LM-priors
+  prior_path: ../../checkpoints/prior.lm_news_en_3M_trans_best.pt
+
+  ...
+```
+You can change the path to your pretrained LM or download on the pretrained LMs we used in the paper from:
+http://data.statmt.org/cbaziotis/projects/lm-prior/checkpoints/.
 
 
-**Reproducibility**: In the following files, you will find all the commands for
+##### Reproducibility
+In the following files, you will find all the commands for
 reproducing the experiments in the paper:
 
  - `configs/transformer/experiments_nmt.sh` contains the commands for the main NMT experiments.
@@ -152,6 +159,78 @@ reproducing the experiments in the paper:
    for the NMT experiments on various scales of the `en->de` parallel data.
  - `configs/transformer/experiments_sensitivity.sh` contains the commands 
    for the sensitivity analysis.
+
+
+
+### Evaluation
+
+To evaluate a pretrained translation model you need to use `models/translate.py`.
+```
+$ python models/translate.py --help
+
+usage: translate.py [-h] [--src SRC] [--out OUT] [--cp CP] [--ref REF]
+                    [--beam_size BEAM_SIZE] [--length_penalty LENGTH_PENALTY]
+                    [--lm LM] [--fusion FUSION] [--fusion_a FUSION_A]
+                    [--batch_tokens BATCH_TOKENS] [--device DEVICE]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --src SRC             Preprocessed input file, in source language.
+  --out OUT             The name of the *detokenized* output file, in the
+                        target language.
+  --cp CP               The checkpoint of the translation model.
+  
+  --ref REF             (optional) The raw reference file, 
+                        to internally compute BLEU by calling sacreBLEU.
+                        
+  --beam_size BEAM_SIZE 
+                        The width of the beam search (default=1)
+  
+  --length_penalty LENGTH_PENALTY
+                        The value of the length penalty (default=1.0)
+                        
+  --lm LM               The checkpoint of a pretrained language
+                        model.Applicable when using LM fusion.
+  --fusion FUSION       The type of LM-fusion to use. 
+                        Options: [shallow, postnorm, prenorm]
+  --fusion_a FUSION_A   This is the weight for the LM in shallow-fusion.
+  --batch_tokens BATCH_TOKENS
+                        The size of the batch in number of tokens.
+  --device DEVICE       The devide id to use (e.g., cuda, cuda:2, cpu, ...)
+```
+
+**Important**: When using POSTNORM, in test time you should use the _same_ 
+LM checkpoint that you used during training the TM.
+
+
+To evaluate a pretrained translation model, run:
+```shell
+# translate the preprocessed input file (DE)
+python models/translate.py --src datasets/mt/wmt_ende/test.de.pp \ 
+  --out test.en.pp.hyps \
+  --cp experiments/trans.deen_base/START_DATETIME/trans.deen_base_best.pt \ 
+  --beam_size 5 --device cuda
+
+# compare the raw detokenized hypothesis file (EN'), with the raw test set (EN)
+cat test.en.pp.hyps | sacrebleu datasets/mt/wmt_ende/test.en
+> BLEU+case.mixed+numrefs.1+smooth.exp+tok.13a+version.1.4.14 = 25.4 59.8/32.9/20.1/12.6 (BP = 0.954 ratio = 0.955 hyp_len = 64022 ref_len = 67012)
+```
+> This is the same way you evaluate a TM that was trained with a LM-prior, as the LM is not needed in test time.
+
+To evaluate a pretrained translation model with shallow-fusion 
+and with a weight of `λ=0.1`, run:
+```shell
+# translate the preprocessed input file (DE)
+python models/translate.py --src datasets/mt/wmt_ende/test.de.pp \ 
+  --out test.en.pp.hyps \
+  --cp experiments/trans.deen_base/START_DATETIME/trans.deen_base_best.pt \ 
+  --lm checkpoints/prior.lm_en.pt  --fusion shallow  --fusion_a 0.1 \
+  --beam_size 5 --device cuda
+
+# compare the raw detokenized hypothesis file (EN'), with the raw test set (EN)
+$ cat test.en.pp.hyps | sacrebleu datasets/mt/wmt_ende/test.en
+BLEU+case.mixed+numrefs.1+smooth.exp+tok.13a+version.1.4.14 = 26.1 60.0/33.4/20.7/13.2 (BP = 0.962 ratio = 0.962 hyp_len = 64484 ref_len = 67012)
+```
 
 
 
