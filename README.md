@@ -52,10 +52,11 @@ http://data.statmt.org/cbaziotis/projects/lm-prior/mono and then put the files i
 the `datasets/mono/priors/` directory.
 
 
+--- 
 
 ### Training
 
-##### Run Visdom server
+##### Run Visdom server (required)
 We use Visdom for visualizing the training progress. Therefore, first open a terminal and run the visdom server:
 ```shell script
 > visdom
@@ -70,8 +71,8 @@ Read more about visdom here: https://github.com/facebookresearch/visdom#usage
 ##### How to train a model
 Every model requires a base configuration stored in a `.yaml` file. 
 All model configurations are stored in the `configs/` directory. 
-When you run an experiment you need to pass the base config to the corresponding 
-python script and optionally override the parameters in the config file.
+When you run an experiment you need to provide a base config 
+and optionally override the parameters in the config file.
 
 For example, you can train a LM on a small test corpus like this:
 ```shell script
@@ -85,13 +86,14 @@ just pass the parameter-value pair like that:
 ```
 For nested parameters, separate the names with `.`.
 
+**Experiment output**: 
 For every model that is trained, all its data, 
 including the checkpoint, outputs and its training progress,
 are saved in the `experiments/` directory, under `experiments/CONFIG_NAME/START_DATETIME`.
 For instance, a model trained with the command above will be saved under:
 `experiments/prototype.rnn_lm_en/20-10-21_16:03:22`.
 
-> Verify that the model is training by opening visdom and selecting the model from the search bar.
+Verify that the model is training by opening visdom and selecting the model from the search bar.
 
 #### 1. Train a language model (LM)
 To train an LM you need to run  `models/sent_lm.py` using the desired config.
@@ -100,10 +102,24 @@ same as in the paper, use the config `configs/transformer/prior.lm_news_en_trans
 and (optionally) pass any parameters to override those in the config file:
 
 ```shell
-python sent_lm.py --config ../configs/transformer/prior.lm_news_en_trans.yaml  \
+/models$ python sent_lm.py --config ../configs/transformer/prior.lm_news_en_trans.yaml  \
   --device cuda  --name prior.lm_news_en_3M_trans_big \ 
   batch_tokens=12000 model.emb_size=1024 model.nhid=4096 model.nhead=16 model.dropout=0.3
 ```
+If you open `configs/transformer/prior.lm_news_en_trans.yaml` you will see that it expects a preprocessed dataset:
+```shell
+  ...
+
+   data:
+     train_path: ../datasets/mono/priors/news.en.2014-2017.pp.3M.train
+     val_path:   ../datasets/mono/priors/news.en.2014-2017.pp.val
+     subword_path: ../datasets/mt/wmt_ende/en.16000
+
+  ...
+```
+You can change the path to your own _preprocessed_ dataset 
+or [download](http://data.statmt.org/cbaziotis/projects/lm-prior/) t
+he prepared data we used in the paper.
 
 **Reproducibility**: You can find the exact commands 
 that were used for training the LMs used in the paper
@@ -142,7 +158,7 @@ If you open `configs/transformer/trans.deen_prior.yaml` you will see that it exp
   ...
 
   # path to pretrained LM. It is required for LM-Fusion and LM-priors
-  prior_path: ../../checkpoints/prior.lm_news_en_3M_trans_best.pt
+  prior_path: ../checkpoints/prior.lm_news_en_3M_trans_best.pt
 
   ...
 ```
@@ -161,6 +177,8 @@ reproducing the experiments in the paper:
    for the sensitivity analysis.
 
 
+
+--- 
 
 ### Evaluation
 
