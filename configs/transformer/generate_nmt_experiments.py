@@ -73,7 +73,7 @@ def fusion(pair, method, ls, bt, synth, subsample=0):
 
     # specify which prior to use
     cmd += f" data.prior_path="
-    cmd += f"../../checkpoints/prior.lm_news_{trg}_3M_trans_big_best.pt"
+    cmd += f"../checkpoints/prior.lm_news_{trg}_3M_trans_big_best.pt"
 
     cmd += _add_tags(pair, method, ls, bt, synth, subsample)
 
@@ -93,7 +93,7 @@ def prior(pair, ls, bt, synth, subsample=0, obj="kl", size="30M"):
 
     # specify which prior to use
     cmd += f" data.prior_path="
-    cmd += f"../../checkpoints/prior.lm_news_{trg}_{size}_trans_big_best.pt"
+    cmd += f"../checkpoints/prior.lm_news_{trg}_{size}_trans_big_best.pt"
 
     cmd += _add_tags(pair, f"prior_{size}_{obj}", ls, bt, synth, subsample)
 

@@ -19,7 +19,7 @@ def experiment(pair, lamda, tau, objective, nhid, smoothing=True):
 
 
 _pair = "deen"
-_prior = "../../checkpoints/prior.lm_news_en_30M_trans_best.pt"
+_prior = "../checkpoints/prior.lm_news_en_30M_trans_best.pt"
 with open("experiments_sensitivity.sh", "w") as f:
     for _lamda in [0.02, 0.1, 0.2, 0.5, 1]:
         for _tau in [1, 2, 5]:

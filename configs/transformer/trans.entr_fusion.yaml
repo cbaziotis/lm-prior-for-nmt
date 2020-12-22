@@ -60,7 +60,7 @@ data:
   vocab_size:
 
   # path to pretrained LM. It is required for LM-Fusion and LM-priors
-  prior_path: ../../checkpoints/prior.lm_news_tr_trans_3M_best.pt
+  prior_path: ../checkpoints/prior.lm_news_tr_trans_3M_best.pt
 
 losses:
   #  standard translation loss (Cross-Entropy)
