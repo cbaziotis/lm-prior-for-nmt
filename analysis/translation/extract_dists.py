@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from helpers.text import devectorize
 from helpers.training import load_checkpoint
-from models.nmt_prior_helpers import prior_model_from_checkpoint
+from models.translate import prior_model_from_checkpoint
 from modules.data.collates import Seq2SeqCollate
 from modules.data.datasets import SequenceDataset, TranslationDataset
 from modules.helpers import sequence_mask

@@ -14,7 +14,6 @@ import os
 import pickle
 
 import numpy
-from torch import nn
 from torch.distributions import Categorical
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -27,7 +26,6 @@ from modules.data.datasets import SequenceDataset, TranslationDataset
 from modules.data.loaders import MultiDataLoader
 from modules.data.samplers import BucketTokensSampler
 from modules.data.utils import fix_paths
-from modules.models import RNNLM, TransformerLM
 from sys_config import TRAINED_PATH
 
 
@@ -240,29 +238,3 @@ def eval_entropy(trainer: NmtPriorTrainer, dataset):
         json.dump(entropies, f, indent=4)
 
 
-def prior_model_from_checkpoint(cp):
-    model_type = cp["config"]["model"].get("type", "rnn")
-
-    if model_type == "rnn":
-        prior_model = RNNLM
-    elif model_type == "transformer":
-        prior_model = TransformerLM
-    else:
-        raise NotImplementedError
-
-    prior = prior_model(len(cp['vocab']), **cp["config"]["model"])
-    prior.load_state_dict(cp["model"])
-
-    # due to a bug in PyTorch we cannot backpropagate through a model in eval
-    # mode. Therefore, we have to manually turn off the regularizations.
-    for name, module in prior.named_modules():
-        if isinstance(module, nn.Dropout):
-            module.p = 0
-
-        elif isinstance(module, nn.LSTM):
-            module.dropout = 0
-
-        elif isinstance(module, nn.GRU):
-            module.dropout = 0
-
-    return prior

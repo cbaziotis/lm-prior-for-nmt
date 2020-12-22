@@ -9,7 +9,8 @@ from helpers.transfer import freeze_module
 from models.nmt_prior_callbacks import EvalCallback, SamplesCallback, \
     AttentionCallback
 from models.nmt_prior_helpers import nmt_dataloaders, \
-    prior_model_from_checkpoint, eval_best, backtranslate
+    eval_best, backtranslate
+from models.translate import prior_model_from_checkpoint
 from models.nmt_prior_trainer import NmtPriorTrainer
 from modules.callbacks import LossCallback, GradientCallback, \
     ModuleGradientCallback, FunctionCallback
@@ -132,7 +133,8 @@ def run(config):
 if __name__ == "__main__":
     _config = exp_options(os.path.join(MODEL_CNF_DIR,
                                        # "seq2seq_proto_elen.yaml"
-                                       "seq2seq_proto_elen_trans.yaml"
+                                       # "seq2seq_proto_elen_trans.yaml"
+                                       "transformer/trans.deen_base.yaml"
                                        ))
     # _config["cores"] = 0
     # _config["pin_memory"] = False

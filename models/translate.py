@@ -1,6 +1,5 @@
 import argparse
 import json
-import multiprocessing
 import os
 import subprocess
 import sys
@@ -10,17 +9,18 @@ import pandas
 # sys.path.insert(0, '.')
 # sys.path.insert(0, '..')
 import torch
+from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from helpers.eval import get_bleu_score
 from helpers.text import devectorize
 from helpers.training import load_checkpoint
-from models.nmt_prior_helpers import prior_model_from_checkpoint
 from modules.data.collates import LMCollate
 from modules.data.datasets import SequenceDataset
 from modules.data.samplers import BucketTokensSampler
 from modules.data.utils import fix_paths
-from modules.models import Seq2SeqTransformer, Seq2SeqRNN
+from modules.models import Seq2SeqTransformer, Seq2SeqRNN, RNNLM, TransformerLM
 
 
 def seq2seq_translate_ids(model,
@@ -248,12 +248,17 @@ def compute_bleu_score(preds, ref, lc=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src')
-    parser.add_argument('--out')
-    parser.add_argument('--cp')
-    parser.add_argument('--ref')
-    parser.add_argument('--beam_size', type=int)
-    parser.add_argument('--length_penalty', type=float)
+    parser.add_argument('--src',
+                        help="Preprocessed input file, in source language.")
+    parser.add_argument('--out',
+                        help="The name of the *detokenized* output file, in the target language")
+    parser.add_argument('--cp', help="The checkpoint of the translation model.")
+    parser.add_argument('--ref',
+                        help="The raw reference file, for internally compute BLEU with sacreBLEU.")
+    parser.add_argument('--beam_size', type=int,
+                        help="The width of the beam search (default=1)")
+    parser.add_argument('--length_penalty', default=1.0, type=float,
+                        help="The value of the length penalty (default=1.0)")
     parser.add_argument('--lm')
     parser.add_argument('--fusion')
     parser.add_argument('--fusion_a', type=float)
@@ -279,22 +284,22 @@ if __name__ == "__main__":
         bleu = compute_bleu_score(args.out, args.ref)
         print(f"BLEU:{bleu}")
 
-    # --------------------------------------------------------------------
-    # --------------------------------------------------------------------
-    # seq2seq.proto_entr_deep
-    # checkpoint = "seq2seq_deen_best.pt"
-    # lm = "../checkpoints/prior.lm_news_en_best.pt"
-    # # lm = None
+    # # --------------------------------------------------------------------
+    # # --------------------------------------------------------------------
+    # # seq2seq.proto_entr_deep
+    # checkpoint = "../experiments/trans.deen_base/20-12-21_21:41:08/trans.deen_base_best.pt"
+    # # lm = "../checkpoints/prior.lm_news_en_best.pt"
+    # lm = None
     # src_file = "../datasets/mt/wmt_ende/test.de.pp"
     # out_file = "../datasets/mt/wmt_ende/test.en.pp.hyps"
     # ref_file = "../datasets/mt/wmt_ende/test.en.pp"
-    # beam_size = 5
+    # beam_size = 2
     # length_penalty = 1
     # # fusion = "shallow"
     # fusion = None
-    # fusion_a = 0.3
+    # fusion_a = 0.0
     # batch_tokens = 2000
-    # device = "cuda"
+    # device = "cpu"
     #
     # seq2seq_translate(checkpoint=checkpoint,
     #                   src_file=src_file,
@@ -307,3 +312,31 @@ if __name__ == "__main__":
     #                   batch_tokens=batch_tokens, device=device)
     # bleu = get_bleu_score(out_file, ref_file)
     # print(f"BLEU:{bleu}")
+
+
+def prior_model_from_checkpoint(cp):
+    model_type = cp["config"]["model"].get("type", "rnn")
+
+    if model_type == "rnn":
+        prior_model = RNNLM
+    elif model_type == "transformer":
+        prior_model = TransformerLM
+    else:
+        raise NotImplementedError
+
+    prior = prior_model(len(cp['vocab']), **cp["config"]["model"])
+    prior.load_state_dict(cp["model"])
+
+    # due to a bug in PyTorch we cannot backpropagate through a model in eval
+    # mode. Therefore, we have to manually turn off the regularizations.
+    for name, module in prior.named_modules():
+        if isinstance(module, nn.Dropout):
+            module.p = 0
+
+        elif isinstance(module, nn.LSTM):
+            module.dropout = 0
+
+        elif isinstance(module, nn.GRU):
+            module.dropout = 0
+
+    return prior
