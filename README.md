@@ -4,6 +4,11 @@ This repository contains source code for the paper
 
 
 # Introduction 
+
+<p align="center">
+  <img src="./model.png" height="400">
+</p>
+
 In this work, we use a  language model (LM) trained
 on target-side monolingual corpora as a weakly
 informative prior. We add a regularization term,
