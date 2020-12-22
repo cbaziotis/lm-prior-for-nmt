@@ -256,3 +256,22 @@ BLEU+case.mixed+numrefs.1+smooth.exp+tok.13a+version.1.4.14 = 26.1 60.0/33.4/20.
 
 To view more information about the analysis done in the paper go to: 
 http://data.statmt.org/cbaziotis/projects/lm-prior/analysis
+
+
+# Reference
+```
+@inproceedings{baziotis-etal-2020-language,
+    title = "Language Model Prior for Low-Resource Neural Machine Translation",
+    author = "Baziotis, Christos  and
+      Haddow, Barry  and
+      Birch, Alexandra",
+    booktitle = "Proceedings of the Conference on Empirical Methods in Natural Language Processing (EMNLP)",
+    month = nov,
+    year = "2020",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2020.emnlp-main.615",
+    doi = "10.18653/v1/2020.emnlp-main.615",
+    pages = "7622--7634"
+}
+```
