@@ -22,7 +22,7 @@ done
 mkdir -p $CURRENT_DIR/data/parallel_en_tr
 cd $CURRENT_DIR/data/parallel_en_tr
 
-for lang in en de; do
+for lang in en tr; do
   for split in train dev test; do
     wget -c http://data.statmt.org/cbaziotis/projects/lm-prior/parallel/wmt_entr/$split.$lang
   done
