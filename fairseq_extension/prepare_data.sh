@@ -124,7 +124,8 @@ prepare_mono() {
 
 }
 
-#prepare_parallel en de
-#prepare_parallel en tr
+prepare_parallel en de
+prepare_parallel en tr
 prepare_mono en 3M
+prepare_mono de 3M
 
