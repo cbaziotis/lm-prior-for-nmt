@@ -72,6 +72,7 @@ generate_job() {
 source $HOME/.bashrc
 conda activate $CONDA_ENV
 
+export PYTHONPATH=$PROJECT_DIR\..\:\$PYTHONPATH
 export PYTHONPATH=$PROJECT_DIR:\$PYTHONPATH
 
 fairseq-train $DATA \\

@@ -1,1 +1,1 @@
-from fairseq_extension.user.lm_prior import *
+from .lm_prior import *
