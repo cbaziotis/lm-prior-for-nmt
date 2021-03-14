@@ -5,7 +5,15 @@ from fairseq.models.transformer_lm import base_lm_architecture
 
 @register_model_architecture("transformer", "paper_transformer_mt")
 def transformer_mt_base(args):
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 512)
     args.encoder_ffn_embed_dim = getattr(args, "encoder_ffn_embed_dim", 1024)
+    args.encoder_attention_heads = getattr(args, "encoder_attention_heads", 8)
+    args.encoder_layers = getattr(args, "encoder_layers", 6)
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 512)
+    args.decoder_ffn_embed_dim = getattr(args, "decoder_ffn_embed_dim", 1024)
+    args.decoder_attention_heads = getattr(args, "decoder_attention_heads", 8)
+    args.decoder_layers = getattr(args, "decoder_layers", 6)
+
     args.dropout = getattr(args, "dropout", 0.3)
     args.share_decoder_input_output_embed = getattr(
         args, "share_decoder_input_output_embed", True
@@ -20,7 +28,6 @@ def transformer_mt_base(args):
 
 @register_model_architecture("transformer_lm", "paper_transformer_lm")
 def transformer_lm_big(args):
-
     args.dropout = getattr(args, "dropout", 0.3)
     args.decoder_layers = getattr(args, "decoder_layers", 6)
     args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 1024)
