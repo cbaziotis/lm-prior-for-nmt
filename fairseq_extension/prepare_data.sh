@@ -13,26 +13,28 @@ mkdir -p $BIN_PATH
 mkdir -p $VOCAB_PATH
 mkdir -p $TOK_PATH
 
+
+
+#---------------------------------------------------------------------------
+# Train the sentencepiece model (SPM_PREFIX)
+#---------------------------------------------------------------------------
 VOCAB_SIZE=16000
 SPM_COVERAGE=0.9999
 
 for lang in en de tr; do
 
   if [ "$lang" == "en" ]; then
-    SPM_DATA="$DATA_PATH/en_de/train.en,$DATA_PATH/en_tr/train.en"
+    SPM_DATA="$DATA_PATH/parallel_en_de/train.en,$DATA_PATH/parallel_en_tr/train.en"
 
   elif [ "$lang" == "de" ]; then
-    SPM_DATA="$DATA_PATH/en_de/train.de"
+    SPM_DATA="$DATA_PATH/parallel_en_de/train.de"
 
   elif [ "$lang" == "tr" ]; then
-    SPM_DATA="$DATA_PATH/en_tr/train.tr"
+    SPM_DATA="$DATA_PATH/parallel_en_tr/train.tr"
   fi
 
   SPM_PREFIX=$VOCAB_PATH/$lang
 
-  #---------------------------------------------------------------------------
-  # Train the sentencepiece model (SPM_PREFIX)
-  #---------------------------------------------------------------------------
   if [ ! -f "$SPM_PREFIX.model" ]; then
     echo "Training $SPM_PREFIX..."
     spm_train --input=$SPM_DATA \
@@ -59,7 +61,7 @@ prepare_parallel() {
   echo "Tokenizing the parallel data"
   for split in train dev test; do
 
-    raw=$DATA_PATH/${L1}_${L2}/${split}
+    raw=$DATA_PATH/parallel_${L1}_${L2}/${split}
     tokenized=$TOK_PATH/parallel.${L1}_${L2}/${split}
 
     spm_encode --model=$VOCAB_PATH/${L1}.model --output_format=piece < ${raw}.${L1} > ${tokenized}.${L1}
@@ -95,23 +97,23 @@ prepare_mono() {
   LANG=${1}
   SIZE=${2}
 
-  mkdir -p $TOK_PATH/mono.${LANG}
+  mkdir -p $TOK_PATH/mono
 
-  TRAIN=$DATA_PATH/$LANG/news.$SIZE.$LANG.train
-  VALID=$DATA_PATH/$LANG/news.$LANG.val
+  TRAIN=$DATA_PATH/mono/news.$SIZE.$LANG.train
+  VALID=$DATA_PATH/mono/news.$LANG.val
 
   SPM_PREFIX=$VOCAB_PATH/$LANG
 
   echo "Tokenizing the monolingual data using the pretrained SPM:'$SPM_PREFIX.model'"
-  spm_encode --model=$SPM_PREFIX.model --output_format=piece < $TRAIN > $TOK_PATH/mono.${LANG}/$LANG.$SIZE.train
-  spm_encode --model=$SPM_PREFIX.model --output_format=piece < $VALID > $TOK_PATH/mono.${LANG}/$LANG.val
+  spm_encode --model=$SPM_PREFIX.model --output_format=piece < $TRAIN > $TOK_PATH/mono/$LANG.$SIZE.train
+  spm_encode --model=$SPM_PREFIX.model --output_format=piece < $VALID > $TOK_PATH/mono/$LANG.val
 
   # Path with binarized data
   PROC_PATH=$BIN_PATH/mono.$LANG.$SIZE
 
   fairseq-preprocess --only-source \
-    --trainpref $TOK_PATH/mono.${LANG}/$LANG.$SIZE.train \
-    --validpref $TOK_PATH/mono.${LANG}/$LANG.val \
+    --trainpref $TOK_PATH/mono/$LANG.$SIZE.train \
+    --validpref $TOK_PATH/mono/$LANG.val \
     --destdir $PROC_PATH \
     --srcdict $SPM_PREFIX.dict.txt \
     --bpe sentencepiece \
