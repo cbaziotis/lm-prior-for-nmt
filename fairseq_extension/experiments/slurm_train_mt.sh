@@ -1,4 +1,14 @@
 #!/bin/bash
+############################################################################
+# SLURM SETTINGS - Update these parameters based on your setup/server
+############################################################################
+CONDA_ENV="fairseq-lm-prior"  # This is the name of the project's conda environment
+ACCOUNT="Project123-GPU"      # Your slurm account.
+TIME="35:59:59"               # The duration of each slurm job. E.g.
+ARRAY="1-4%1"                 # How many times to repeat the slurm job."1-2%1"
+MODE="train"                  # The job mode (NOT slurm). 1) "train" means that you want to
+                              # first train and then eval the trained model, while
+                              # 2) "eval" just evaluates it an already trained model.
 
 ############################################################################
 # DIRECTORIES
@@ -11,42 +21,20 @@ EXP_LAUNCH_DIR="$CURRENT_DIR/translation"
 mkdir -p $EXP_LAUNCH_DIR
 mkdir -p $EXP_LAUNCH_DIR/log
 
-
-############################################################################
-# SLURM SETTINGS
-############################################################################
-CONDA_ENV="fairseq-lm-prior"
-
-ACCOUNT="T2-CS119-GPU"
-TIME="35:59:59"
-ARRAY="1-2%1"
-MODE='train'
-
-for i in "$@"; do
-  if [[ $i == "low" ]]; then
-    ACCOUNT="T2-CS055-SL4-GPU"
-    TIME="11:59:59"
-    ARRAY="1-6%1"
-  elif [[ $i == "eval" ]]; then
-    MODE='eval'
-  fi
-done
-
-
 ############################################################################
 # Job Generator
 ############################################################################
 
-TOTAL_UPDATES=80000  # Total number of training steps
+TOTAL_UPDATES=80000   # Total number of training steps
 WARMUP_UPDATES=8000   # Warmup the learning rate over this many updates
-MAX_TOKENS=12000      # Warmup the learning rate over this many updates
-PEAK_LR=0.0002        # Peak learning rate, adjust as needed
+MAX_TOKENS=12000       # Warmup the learning rate over this many updates
+PEAK_LR=0.0005        # Peak learning rate, adjust as needed
 WEIGHT_DECAY=0.01
 CLIP_NORM=0.0
 EPS=1e-06
 BETA='(0.9, 0.999)'
-UPDATE_FREQ=2         # Increase the batch size X
-N_GPU=1
+UPDATE_FREQ=1         # Increase the batch size X
+N_GPU=2
 
 generate_job() {
   EXP_NAME=${1}
@@ -96,10 +84,12 @@ fairseq-train $DATA \\
   --max-update $TOTAL_UPDATES \\
   --lr $PEAK_LR --lr-scheduler inverse_sqrt \\
   --weight-decay $WEIGHT_DECAY --clip-norm $CLIP_NORM \\
-  --max-source-positions 256 \\
-  --max-target-positions 256 \\
+  --max-source-positions 200 \\
+  --max-target-positions 200 \\
   --max-tokens $MAX_TOKENS \\
   --update-freq $UPDATE_FREQ  \\
+  --save-dir $SAVE_DIR \\
+  --tensorboard-logdir $TB_DIR/$EXP_NAME \\
   --log-interval 100  --log-format tqdm \\
   --save-interval-updates 5000 \\
   --keep-interval-updates 0 \\

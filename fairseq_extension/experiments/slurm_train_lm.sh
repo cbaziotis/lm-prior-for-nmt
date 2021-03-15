@@ -1,4 +1,15 @@
 #!/bin/bash
+############################################################################
+# SLURM SETTINGS - Update these parameters based on your setup/server
+############################################################################
+CONDA_ENV="fairseq-lm-prior"  # This is the name of the project's conda environment
+ACCOUNT="Project123-GPU"      # Your slurm account.
+TIME="35:59:59"               # The duration of each slurm job. E.g.
+ARRAY="1-4%1"                 # How many times to repeat the slurm job."1-2%1"
+MODE="train"                  # The job mode (NOT slurm). 1) "train" means that you want to
+                              # first train and then eval the trained model, while
+                              # 2) "eval" just evaluates it an already trained model.
+
 
 ############################################################################
 # DIRECTORIES
@@ -10,24 +21,6 @@ EXP_LAUNCH_DIR="$CURRENT_DIR/lm"
 
 mkdir -p $EXP_LAUNCH_DIR
 mkdir -p $EXP_LAUNCH_DIR/log
-
-
-############################################################################
-# SLURM SETTINGS
-############################################################################
-CONDA_ENV="fairseq-lm-prior"
-
-ACCOUNT="T2-CS119-GPU"
-TIME="35:59:59"
-ARRAY="1-10%1"
-
-for i in "$@"; do
-  if [[ $i == "low" ]]; then
-    ACCOUNT="T2-CS055-SL4-GPU"
-    TIME="11:59:59"
-    ARRAY="1-20%1"
-  fi
-done
 
 ############################################################################
 # Job Generator
