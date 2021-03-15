@@ -13,6 +13,45 @@ the `fairseq_extension/user/lm_prior/lm_prior.py` file. If you are not familiar
 with fairseq's plug-in system
 read [this](https://fairseq.readthedocs.io/en/latest/overview.html) first.
 
+
+Here is an example of how to train a model with fairseq using the plugin:
+
+```shell
+DATA=fairseq_extension/data-bin/parallel.en_de
+USER=fairseq_extension/user
+LM_CHKP=fairseq_extension/checkpoints/lm.en.3M/checkpoint_best.pt
+
+fairseq-train  $DATA \
+  --user-dir  $USER \
+  --task translation \
+  --source-lang de --target-lang en \
+  --arch transformer_mt_lm \ 
+  --lm-checkpoint $LM_CHKP \
+  --criterion cross_entropy_prior \ 
+  --prior-lambda 0.5 \
+  --prior-tau 2 \
+  --label-smoothing 0 \
+  --optimizer adam --adam-betas '(0.9, 0.999)' --adam-eps 1e-06 \
+  --warmup-updates 8000 --lr 0.0005 --lr-scheduler inverse_sqrt \
+  --weight-decay 0.01 --clip-norm 0.0 \
+  --max-source-positions 256 --max-target-positions 256 --max-tokens 12000 \
+  --save-dir /home/christos/PycharmProjects/lmprior/fairseq_extension/checkpoints/nmt.deen.prior.3M_ls=0.0_tau=2_lambda=0.3_seed=1 \
+  --tensorboard-logdir /home/christos/PycharmProjects/lmprior/fairseq_extension/tensorboard/nmt.deen.prior.3M_ls=0.0_tau=2_lambda=0.3_seed=1 \
+  --seed 1
+
+```
+These parameters are **fixed**:
+
+- `--arch`=`transformer_mt_lm`
+- `--criterion`=`cross_entropy_prior`
+
+There are 3 parameters that you can change:
+
+- `--prior-lambda`: this controls the weight applied to the auxiliary regularization term. It is recommended to use values in the range `[0.1-0.5]` (In the paper we set `λ=0.5`).
+- `--prior-tau`: this is the temperature parameter applied to the KL term. It is recommended to use values in the range `[1-5]` (In the paper we set `τ=2`).
+- `--label-smoothing`:  If you want to also apply label-smoothing the target distribution, specify the value of the smoothing parameter.
+
+
 **Disclaimer**: This is a re-implementation of the original code in fairseq and
 the goal is to enable others to try the method in a widely adopted framework. As
 the method is implemented in a different framework there may be some small
@@ -20,11 +59,6 @@ differences in the final results. However, I expect that your results will
 generally agree with the findings of the paper.
 
 # Prerequisites
-
-```shell
-bash /home/christos/PycharmProjects/lmprior/fairseq_extension/experiments/slurm_train_mt.sh fairseq-lm-prior Project123-GPU 35:59:59 "1-2%1" train
-
-```
 
 ### 1. Create Conda Environment
 
@@ -172,46 +206,6 @@ The checkpoints of each model will be saved
 under `fairseq_extension/checkpoints/`. Also, after the training of a
 translation model finishes, it will be automatically evaluated and its outputs
 will be saved in the same directory as its checkpoints.
-
-# How to use the LM-prior with Fairseq
-
-First, add the plug-in file into your `user` directory. Then, you can train a
-translation model with the LM-prior like this:
-
-```shell
-DATA=fairseq_extension/data-bin/parallel.en_de
-USER=fairseq_extension/user
-LM_CHKP=fairseq_extension/checkpoints/lm.en.3M/checkpoint_best.pt
-
-fairseq-train  $DATA \
-  --user-dir  $USER \
-  --task translation \
-  --source-lang de --target-lang en \
-  --arch transformer_mt_lm \ 
-  --lm-checkpoint $LM_CHKP \
-  --criterion cross_entropy_prior \ 
-  --prior-lambda 0.5 \
-  --prior-tau 2 \
-  --label-smoothing 0 \
-  --optimizer adam --adam-betas '(0.9, 0.999)' --adam-eps 1e-06 \
-  --warmup-updates 8000 --lr 0.0005 --lr-scheduler inverse_sqrt \
-  --weight-decay 0.01 --clip-norm 0.0 \
-  --max-source-positions 256 --max-target-positions 256 --max-tokens 12000 \
-  --save-dir /home/christos/PycharmProjects/lmprior/fairseq_extension/checkpoints/nmt.deen.prior.3M_ls=0.0_tau=2_lambda=0.3_seed=1 \
-  --tensorboard-logdir /home/christos/PycharmProjects/lmprior/fairseq_extension/tensorboard/nmt.deen.prior.3M_ls=0.0_tau=2_lambda=0.3_seed=1 \
-  --seed 1
-
-```
-These parameters are **fixed**:
-
-- `arch`=`transformer_mt_lm`
-- `criterion`=`cross_entropy_prior`
-
-There are 3 parameters that you can change:
-
-- `prior-lambda`: this controls the weight applied to the auxiliary regularization term. It is recommended to use values in the range `[0.1-0.5]` (In the paper we set `λ=0.5`).
-- `prior-tau`: this is the temperature parameter applied to the KL term. It is recommended to use values in the range `[1-5]` (In the paper we set `τ=2`).
-- `--label-smoothing`:  If you want to also apply label-smoothing the target distribution, specify the value of the smoothing parameter.
 
 # Reference
 
