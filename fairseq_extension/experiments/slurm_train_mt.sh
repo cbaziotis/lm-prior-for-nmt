@@ -37,7 +37,7 @@ done
 # Job Generator
 ############################################################################
 
-TOTAL_UPDATES=50000  # Total number of training steps
+TOTAL_UPDATES=80000  # Total number of training steps
 WARMUP_UPDATES=8000   # Warmup the learning rate over this many updates
 MAX_TOKENS=12000      # Warmup the learning rate over this many updates
 PEAK_LR=0.0002        # Peak learning rate, adjust as needed
@@ -45,19 +45,18 @@ WEIGHT_DECAY=0.01
 CLIP_NORM=0.0
 EPS=1e-06
 BETA='(0.9, 0.999)'
-LS=0.1                # Label smoothing
-UPDATE_FREQ=1         # Increase the batch size X
-N_GPU=2
+UPDATE_FREQ=2         # Increase the batch size X
+N_GPU=1
 
 generate_job() {
   EXP_NAME=${1}
   DATA=$(readlink -f $PROJECT_DIR/data-bin/${2})
   SRC_LANG=${3}
   TRG_LANG=${4}
-  SEED=${5}
+  HPARAMS=${5}
+  SEED=${6}
 
   EXP_NAME="${EXP_NAME}_seed=${SEED}"
-
   SAVE_DIR=$PROJECT_DIR/checkpoints/$EXP_NAME
   FILE="$EXP_LAUNCH_DIR/${EXP_NAME}.sh"
 
@@ -91,8 +90,7 @@ fairseq-train $DATA \\
   --user-dir $PROJECT_DIR/user \\
   --task translation \\
   --source-lang $SRC_LANG --target-lang $TRG_LANG \\
-  --arch paper_transformer_mt \\
-  --criterion label_smoothed_cross_entropy --label-smoothing $LS \\
+  $HPARAMS \\
   --optimizer adam --adam-betas '$BETA' --adam-eps $EPS \\
   --warmup-updates $WARMUP_UPDATES \\
   --max-update $TOTAL_UPDATES \\
@@ -133,13 +131,6 @@ for split in valid test; do
     --beam 5 --remove-bpe sentencepiece --sacrebleu
 done
 
-fairseq-generate $TEST_DATA \\
-  --user-dir $PROJECT_DIR/user \\
-  --source-lang $SRC_LANG --target-lang $TRG_LANG \\
-  --path $SAVE_DIR/checkpoint_best.pt \\
-  --results-path $SAVE_DIR/newstest2019 \\
-  --beam 5 --remove-bpe sentencepiece --sacrebleu
-
 $PROJECT_DIR/experiments/eval-translation.sh $SAVE_DIR $SRC_LANG $TRG_LANG
 
 scancel \${SLURM_ARRAY_JOB_ID}
@@ -150,4 +141,14 @@ END
 }
 
 
-generate_job nmt.en_de.ls parallel.en_de en de 1
+generate_job nmt.deen.base parallel.en_de de en "--arch paper_transformer_mt --criterion cross_entropy" 1
+generate_job nmt.deen.ls parallel.en_de de en "--arch paper_transformer_mt --criterion label_smoothed_cross_entropy --label-smoothing 0.1" 1
+generate_job nmt.deen.prior.3M_ls=0.0_tau=1_lambda=0.1 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.1 --prior-tau 1 --label-smoothing 0" 1
+generate_job nmt.deen.prior.3M_ls=0.0_tau=1_lambda=0.3 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.3 --prior-tau 1 --label-smoothing 0" 1
+generate_job nmt.deen.prior.3M_ls=0.0_tau=1_lambda=0.5 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.5 --prior-tau 1 --label-smoothing 0" 1
+generate_job nmt.deen.prior.3M_ls=0.0_tau=2_lambda=0.1 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.1 --prior-tau 2 --label-smoothing 0" 1
+generate_job nmt.deen.prior.3M_ls=0.0_tau=2_lambda=0.3 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.3 --prior-tau 2 --label-smoothing 0" 1
+generate_job nmt.deen.prior.3M_ls=0.0_tau=2_lambda=0.5 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.5 --prior-tau 2 --label-smoothing 0" 1
+generate_job nmt.deen.prior.3M_ls=0.1_tau=2_lambda=0.1 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.1 --prior-tau 2 --label-smoothing 0.1" 1
+generate_job nmt.deen.prior.3M_ls=0.1_tau=2_lambda=0.3 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.3 --prior-tau 2 --label-smoothing 0.1" 1
+generate_job nmt.deen.prior.3M_ls=0.1_tau=2_lambda=0.5 parallel.en_de de en "--arch paper_transformer_mt_lm --lm-checkpoint $PROJECT_DIR/checkpoints/lm.en.3M/checkpoint_best.pt --criterion cross_entropy_prior --prior-lambda 0.5 --prior-tau 2 --label-smoothing 0.1" 1
