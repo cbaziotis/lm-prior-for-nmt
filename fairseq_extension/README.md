@@ -47,8 +47,8 @@ These parameters are **fixed**:
 
 There are 3 parameters that you can change:
 
-- `--prior-lambda`: this controls the weight applied to the auxiliary regularization term. It is recommended to use values in the range `[0.1-0.5]` (In the paper we set `λ=0.5`).
-- `--prior-tau`: this is the temperature parameter applied to the KL term. It is recommended to use values in the range `[1-5]` (In the paper we set `τ=2`).
+- `--prior-lambda`: this controls the weight applied to the auxiliary regularization term. It is recommended to use values in the range `[0.1-0.5]`.
+- `--prior-tau`: this is the temperature parameter applied to the KL term. It is recommended to use values in the range `[1-5]`.
 - `--label-smoothing`:  If you want to also apply label-smoothing the target distribution, specify the value of the smoothing parameter.
 
 
