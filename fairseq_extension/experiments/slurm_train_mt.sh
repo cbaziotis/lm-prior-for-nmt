@@ -112,7 +112,7 @@ END
   cat <<END >>$FILE
 
 for split in valid test; do
-  fairseq-generate $PARA_DATA \\
+  fairseq-generate $DATA \\
     --user-dir $PROJECT_DIR/user \\
     --source-lang $SRC_LANG --target-lang $TRG_LANG \\
     --gen-subset \$split \\
