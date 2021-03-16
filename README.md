@@ -2,6 +2,8 @@ This repository contains source code for the paper
 "Language Model Prior for Low-Resource Neural Machine Translation" 
 ([Paper](https://arxiv.org/abs/2004.14928))
 
+---
+**Update**: There is a fairseq plug-in of the LM-prior under `fairseq_extension/`.
 
 # Introduction 
 
