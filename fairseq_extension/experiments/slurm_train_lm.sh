@@ -98,4 +98,10 @@ END
   sbatch $FILE
 }
 
-generate_job lm.en.3M mono.en.3M
+generate_job lm.en.3M  mono.en.3M
+generate_job lm.en.30M mono.en.30M
+
+generate_job lm.de.3M  mono.de.3M
+generate_job lm.de.30M mono.de.30M
+
+generate_job lm.tr.3M  mono.tr.3M

@@ -5,7 +5,7 @@ This repository contains source code for the paper
 
 # Introduction 
 
-<p align="center">
+<p align="center" max>
   <img src="./model.png">
 </p>
 
@@ -17,7 +17,7 @@ be probable under the distributions of the LM.
 
 
 ---
-**Update**: You can now use the LM-prior with fairseq using the plug-in under [fairseq_extension](fairseq_extension/).
+**UPDATE**: You can now use the LM-prior with fairseq using the plug-in under [fairseq_extension](fairseq_extension/).
 
 
 # Prerequisites
