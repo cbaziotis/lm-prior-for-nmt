@@ -51,7 +51,6 @@ generate_job() {
   echo "Experiment: ${EXP_NAME}"
   echo
 
-  if [ "${MODE}" == 'train' ]; then
     cat <<END >$FILE
 #!/bin/bash
 #SBATCH -A $ACCOUNT
@@ -73,6 +72,11 @@ conda activate $CONDA_ENV
 
 export PYTHONPATH=$PROJECT_DIR/../:\$PYTHONPATH
 export PYTHONPATH=$PROJECT_DIR:\$PYTHONPATH
+
+END
+
+  if [ "${MODE}" == 'train' ]; then
+    cat <<END >>$FILE
 
 fairseq-train $DATA \\
   --user-dir $PROJECT_DIR/user \\

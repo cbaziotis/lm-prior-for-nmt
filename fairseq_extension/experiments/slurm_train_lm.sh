@@ -5,10 +5,7 @@
 CONDA_ENV="fairseq-lm-prior"  # This is the name of the project's conda environment
 ACCOUNT="Project123-GPU"      # Your slurm account.
 TIME="35:59:59"               # The duration of each slurm job. E.g.
-ARRAY="1-4%1"                 # How many times to repeat the slurm job."1-2%1"
-MODE="train"                  # The job mode (NOT slurm). 1) "train" means that you want to
-                              # first train and then eval the trained model, while
-                              # 2) "eval" just evaluates it an already trained model.
+ARRAY="1-2%1"                 # How many times to repeat the slurm job."1-2%1"
 
 
 ############################################################################
