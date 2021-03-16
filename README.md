@@ -2,8 +2,6 @@ This repository contains source code for the paper
 "Language Model Prior for Low-Resource Neural Machine Translation" 
 ([Paper](https://arxiv.org/abs/2004.14928))
 
----
-**Update**: There is a fairseq plug-in of the LM-prior under `fairseq_extension/`.
 
 # Introduction 
 
@@ -16,6 +14,11 @@ on target-side monolingual corpora as a weakly
 informative prior. We add a regularization term,
 which drives the output distributions of the translation model (TM) to
 be probable under the distributions of the LM.
+
+
+---
+**Update**: You can now use the LM-prior with fairseq using the plug-in under [fairseq_extension](fairseq_extension/).
+
 
 # Prerequisites
 
